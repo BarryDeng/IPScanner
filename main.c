@@ -1,25 +1,38 @@
 #include "commons.h"
+#include "debug.h"
+
+void doScan(char*, char*, char*);
+void help()
+{
+	puts("Usage: PROG_NAME [-p port] [-t type] addr");
+	puts("port: port number in 1-65535");
+	puts("type: SYN, ACK, Connect, UDP, ICMP");
+}
+
 
 int main(int argc, char* argv[])
 {
 	int ch;
-	opterr = 0;
-	while ((ch = getopt(argc, argv, "a:bcde")) != -1)	
+	char *port, *type;
+	// opterr = 0;
+	while ((ch = getopt(argc, argv, "t:p:h")) != -1)	
 	{
 		switch (ch)
 		{
-			case 'a':
-				printf("option a: %s\n", optarg);
+			case 't':
+				Log("option a: %s\n", optarg);
+				type = strdup(optarg);	
 				break;
-			case 'b':
-				printf("option b\n");
+			case 'p':
+				Log("option b: %s\n", optarg);
+				port = strdup(optarg);
 				break;
-			default:
-				printf("%c\n", ch);
-				break;	
+			case 'h':
+				help();
+				break;
 		}
 	}
-	printf("optopt %c", optopt);
+	doScan(argv[optind], port, type);
 	return 0;
 	
 }

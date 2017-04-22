@@ -12,6 +12,7 @@ void help()
 
 int main(int argc, char* argv[])
 {
+
 	int ch;
 	char *port, *type;
 	// opterr = 0;

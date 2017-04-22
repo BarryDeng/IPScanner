@@ -1,3 +1,3 @@
-void SYNscan()
+void synScan(char* addr, int* port)
 {
 }

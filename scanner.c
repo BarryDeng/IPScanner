@@ -3,11 +3,12 @@
 
 char* scanType[] = {"SYN", "ACK", "Connect", "UDP"};
 void (*scanFunc[])(char*, int*) = {synScan, ackScan, connectScan, udpScan};
+const int SCAN_LEN = sizeof(scanType) / sizeof(scanType[0]);
 
 void (*scanDispatcher(char* type)) (char*, int*)
 {
 	int i = 0;
-	for (; i < sizeof(scanType) / sizeof(scanType[0]); ++i)
+	for (; i < SCAN_LEN; ++i)
 	{
 		if (!strcmp(type, scanType[i]))
 		{

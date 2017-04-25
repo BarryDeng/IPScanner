@@ -3,6 +3,29 @@
 
 #define MAXSLEEP 128
 
+int connect_once(int domain, int type, int protocol, const struct sockaddr *addr, socklen_t alen)
+{
+    int fd;
+
+    /*
+     * Try to connect with exponential backoff.
+     */
+
+    if ((fd = socket(domain, type, protocol)) < 0)
+        return -1;
+    if (connect(fd, addr, alen) == 0)
+    {
+        /*
+         * Connection accepted.
+         */
+        return fd;
+    }
+    close(fd);
+
+    return -1;
+}
+
+
 int connect_retry(int domain, int type, int protocol, const struct sockaddr *addr, socklen_t alen)
 {
     int numsec, fd;

@@ -15,19 +15,43 @@ int main(int argc, char* argv[])
 
 	int ch;
 	char *port, *type;
+    /* Must run as root. */
+    if (geteuid())
+    {
+        fprintf(stderr, "Please run this program as root user. You may use sudo!\n");
+        return 1;
+    }
 	// opterr = 0;
-	while ((ch = getopt(argc, argv, "t:p:h")) != -1)	
+	while ((ch = getopt(argc, argv, "i:s:p:ht:T:")) != -1)	
 	{
 		switch (ch)
 		{
-			case 't':
-				Log("option a: %s\n", optarg);
+            // NIC: eth0, wlan0, ...
+            case 'i':
+                Log("option i: %s\n", optarg);
+                nic_device = optarg; 
+                break;
+            // Scan Type: Connect, SYN, ACK, UDP
+			case 's':
+				Log("option s: %s\n", optarg);
 				type = strdup(optarg);	
 				break;
+            // Interval time 
+            case 't':
+                Log("option t: %s\n", optarg);
+                interval_time = atoi(optarg);
+                break;
+            // Port
 			case 'p':
-				Log("option b: %s\n", optarg);
+				Log("option p: %s\n", optarg);
 				port = strdup(optarg);
 				break;
+            // Timeout time
+            case 'T':
+                Log("option T: %s\n", optarg);
+                timeout_time = atoi(optarg);
+                break;
+            // Help
 			case 'h':
 				help();
 				break;

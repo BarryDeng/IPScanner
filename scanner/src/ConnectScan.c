@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include "debug.h"
+#include "connect.h"
 
 #include <errno.h>
 
-int connect_retry(int domain, int type, int protocol, const struct sockaddr * addr, socklen_t alen);
 
 void connectScan(char* addr, int* port)
 {
@@ -16,7 +16,7 @@ void connectScan(char* addr, int* port)
     sockaddr.sin_family = AF_INET;
     sockaddr.sin_port = htons(port[0]);
     inet_pton(AF_INET, addr, &sockaddr.sin_addr);
-    if ((fd = connect_retry(AF_INET, SOCK_STREAM, 0, (struct sockaddr *)&sockaddr, sizeof(sockaddr))) < 0)
+    if ((fd = connect_once(AF_INET, SOCK_STREAM, 0, (struct sockaddr *)&sockaddr, sizeof(sockaddr))) < 0)
     {
         Log("%s:%d Failed", addr, port[0]);
     }

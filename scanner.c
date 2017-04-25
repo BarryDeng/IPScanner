@@ -1,6 +1,10 @@
 #include "commons.h"
 #include "scans.h"
 
+const char* nic_device = NULL;
+const int interval_time = 0;
+const int timeout_time = 5;
+
 char* scanType[] = {"SYN", "ACK", "Connect", "UDP"};
 void (*scanFunc[])(char*, int*) = {synScan, ackScan, connectScan, udpScan};
 const int SCAN_LEN = sizeof(scanType) / sizeof(scanType[0]);

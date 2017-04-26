@@ -1,7 +1,14 @@
 #include "commons.h"
 #include "debug.h"
 
+extern const char* nic_device;
+extern int interval_time;
+extern int timeout_time;
+
+void initScanner();
+void init_ip_pool(const char* addr);
 void doScan(char*, char*, char*);
+
 void help()
 {
 	puts("Usage: PROG_NAME [-p port] [-t type] addr");
@@ -14,13 +21,15 @@ int main(int argc, char* argv[])
 {
 
 	int ch;
-	char *port, *type;
+	char *port = NULL, *type = NULL;
     /* Must run as root. */
     if (geteuid())
     {
         fprintf(stderr, "Please run this program as root user. You may use sudo!\n");
         return 1;
     }
+
+    initScanner();
 	// opterr = 0;
 	while ((ch = getopt(argc, argv, "i:s:p:ht:T:")) != -1)	
 	{

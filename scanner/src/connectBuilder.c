@@ -1,5 +1,4 @@
-#include <sys/socket.h>
-#include <unistd.h>
+#include "connect.h"
 
 #define MAXSLEEP 128
 

@@ -1,5 +1,5 @@
-void synScan(char*, int*);
-void udpScan(char*, int*);
-void connectScan(char*, int*);
-void ackScan(char*, int*);
+void synScan(uint32_t, int*, int);
+void udpScan(uint32_t, int*, int);
+void connectScan(uint32_t, int*, int);
+void ackScan(uint32_t, int*, int);
 

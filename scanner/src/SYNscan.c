@@ -1,3 +1,5 @@
-void synScan(char* addr, int* port)
+#include "commons.h"
+
+void synScan(uint32_t addr, int* port, int portnum)
 {
 }

@@ -1,2 +1,0 @@
-scanner.o: scanner.c scanner/include/commons.h scanner/include/debug.h \
- scanner/include/scans.h scanner/include/packetSender.h

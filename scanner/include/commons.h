@@ -8,6 +8,9 @@
 #include <string.h>
 #include <libnet.h>
 #include <pcap.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <netinet/ether.h>
 
 #define DEBUG
 

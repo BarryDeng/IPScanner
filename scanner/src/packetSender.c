@@ -1,22 +1,28 @@
 #include "commons.h"
+#include "debug.h"
 
 extern const char* nic_device;
 extern uint32_t ip_pool_start;
 extern uint32_t ip_pool_end;
 extern uint32_t ip_pool_num;
 
-
+static int ctx_inj;
 static libnet_t* netctx = NULL;
 static uint32_t ip_src;
 static uint8_t* mac_src;
+uint8_t* gateway_mac_src;
+int gateway_mac_src_set = 0;
+
 static const char* nic_name;
-static uint32_t tcp_seq;
+uint32_t tcp_seq;
 static libnet_ptag_t tcp_tag = 0;
 static libnet_ptag_t ip_tag = 0;
+static libnet_ptag_t mac_tag = 0;
 
 void init_net_ctx(int inj_type)
 {
     char errbuf[LIBNET_ERRBUF_SIZE];
+    ctx_inj = inj_type;
 
     // init net context
     netctx = libnet_init(inj_type, nic_device, errbuf);
@@ -97,8 +103,11 @@ uint32_t get_ip(uint32_t index)
     return htonl(ip_pool_start + index);
 }
 
-void sendSYN(uint32_t src, uint16_t sp, uint32_t dst, uint16_t dp)
+void sendSYN(uint32_t dst, uint16_t dp)
 {
+    uint32_t src = ip_src;
+    uint16_t sp = libnet_get_prand(LIBNET_PRu16);
+
     tcp_tag = libnet_build_tcp(
             sp, /* source port */
             dp, /* dest port */
@@ -142,13 +151,35 @@ void sendSYN(uint32_t src, uint16_t sp, uint32_t dst, uint16_t dp)
         exit(1);
     }
 
-    // TODO: add data link layer and send
+    if (netctx == LIBNET_LINK)
+    {
+        mac_tag = libnet_build_ethernet(
+                    gateway_mac_src,
+                    mac_src,
+                    ETHERTYPE_IP,
+                    NULL,
+                    0,
+                    netctx,
+                    mac_tag
+                ); 
+        if (mac_tag == -1)
+        {
+            fprintf(stderr, "Build MAC Header Error: %s\n", libnet_geterror(netctx));
+            exit(1);
+        }
+    }
+
+    if (libnet_write(netctx) == -1)
+    {
+        Log("Send packet Failed!");
+    }
+
 }
 
-void sendUDP(uint32_t src, uint16_t sp, uint32_t dst, uint16_t dp)
+void sendUDP(uint32_t dst, uint16_t dp)
 {
 }
 
-void sendACK(uint32_t src, uint16_t sp, uint32_t dst, uint16_t dp)
+void sendACK(uint32_t dst, uint16_t dp)
 {
 }

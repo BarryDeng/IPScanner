@@ -73,6 +73,7 @@ void doScan(char* addr, char *port, char* type)
 	else
 	{
         init_ip_pool(addr);
+        init_net_ctx(LIBNET_RAW4);
         for (uint32_t i = 0; i < ip_pool_num; ++i)
         {
             Log("NOW %s", libnet_addr2name4(ntohl(ip_pool_start + i), LIBNET_DONT_RESOLVE));

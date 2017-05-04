@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "scans.h"
 #include "packetSender.h"
+#include "packetHandler.h"
 
 #define MAX_PORT_NUM 20
 int ALL_PORTS[65536];
@@ -74,6 +75,7 @@ void doScan(char* addr, char *port, char* type)
 	{
         init_ip_pool(addr);
         init_net_ctx(LIBNET_RAW4);
+        init_pcap_ctx(NULL);
         for (uint32_t i = 0; i < ip_pool_num; ++i)
         {
             Log("NOW %s", libnet_addr2name4(ntohl(ip_pool_start + i), LIBNET_DONT_RESOLVE));

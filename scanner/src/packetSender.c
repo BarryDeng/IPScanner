@@ -10,11 +10,11 @@ static int ctx_inj;
 static libnet_t* netctx = NULL;
 static uint32_t ip_src;
 static uint8_t* mac_src;
-uint8_t* gateway_mac_src;
+uint8_t gateway_mac_src[6];
 int gateway_mac_src_set = 0;
 
 static const char* nic_name;
-uint32_t tcp_seq;
+uint32_t tcp_no;
 static libnet_ptag_t tcp_tag = 0;
 static libnet_ptag_t ip_tag = 0;
 static libnet_ptag_t mac_tag = 0;
@@ -34,7 +34,8 @@ void init_net_ctx(int inj_type)
 
     libnet_seed_prand(netctx);
     /* Get a random number for TCP Seq Num. So that we can use pcap program to get the response packet to the request packet. */
-    tcp_seq = libnet_get_prand(LIBNET_PRu32);
+    tcp_no = libnet_get_prand(LIBNET_PRu32);
+    Log("TCP NO: %u", tcp_no);
 
     if ((ip_src = libnet_get_ipaddr4(netctx)) == (uint32_t)-1)
     {
@@ -105,13 +106,16 @@ uint32_t get_ip(uint32_t index)
 
 void sendSYN(uint32_t dst, uint16_t dp)
 {
+    Log("Wait 3 seconds...");
+    sleep(3);
+    Log("Seed SYN to %s:%u", libnet_addr2name4(dst, LIBNET_DONT_RESOLVE), dp);
     uint32_t src = ip_src;
     uint16_t sp = libnet_get_prand(LIBNET_PRu16);
 
     tcp_tag = libnet_build_tcp(
             sp, /* source port */
             dp, /* dest port */
-            tcp_seq, /* TCP seq num */
+            tcp_no, /* TCP seq num */
             0, /* ACK */
             TH_SYN, /* FLAGS */
             1024, /* Window */

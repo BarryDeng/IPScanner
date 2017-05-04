@@ -6,7 +6,7 @@ dependence:=$(sources:.c=.d)
 
 #所用的编译工具
 CC=gcc
-LDFLAGS=-lnet -lpcap
+LDFLAGS=-lnet -lpcap -lpthread
 INCLUDE_DIR=scanner/include/
 OBJ_DIR=obj/
 PROG=ipscan
@@ -30,6 +30,10 @@ include $(dependence) #注意该句要放在终极目标all的规则之后，否
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	
 
-.PHONY: clean #之所以把clean定义成伪目标，是因为这个目标并不对应实际的文件
+.PHONY: clean clean-d#之所以把clean定义成伪目标，是因为这个目标并不对应实际的文件
 clean:
 	rm -f $(PROG) $(addprefix $(OBJ_DIR),$(objects)) $(dependence)
+
+clean-d:
+	rm -f *.d *.d.* scanner/src/*.d scanner/src/*.d.*
+

@@ -1,7 +1,8 @@
 #include "packetHandler.h"
+#include "debug.h"
 
-extern uint32_t tcp_seq;
-extern uint8_t* gateway_mac_src;
+extern uint32_t tcp_no;
+extern uint8_t gateway_mac_src[6];
 extern int gateway_mac_src_set;
 
 // BPF Filter
@@ -31,7 +32,9 @@ void init_pcap_ctx(char * interface)
         exit(1);
     }
 
-    snprintf(filter, sizeof(filter), "tcp[8:4] == %u+1", tcp_seq);
+    snprintf(filter, sizeof(filter), "tcp[8:4] = %u", tcp_no + 1);
+    Log("BPF: %s", filter);
+
     if (pcap_compile(handler, &bpf_p, filter, 0, mask) == -1)
     {
         fprintf(stderr, "BPF compiler error: %s\n", pcap_geterr(handler));
@@ -47,17 +50,7 @@ void init_pcap_ctx(char * interface)
 
 }
 
-void packet_handler(u_char*, const struct pcap_pkthtr*, const u_char*);
-
-void start_pcap()
-{
-    for (;;)
-    {
-        pcap_dispatch(handler, 10, packet_handler, NULL);
-    } 
-}
-
-void packet_handler(u_char* user, const struct pcap_pkthtr* packet, const u_char* raw)
+void packet_handler(unsigned char* user, const struct pcap_pkthdr* packet, const unsigned char* raw)
 {
     struct ether_header* eth_h = (struct ether_header*)raw;
     struct ip* ip_h = (struct ip*)(raw + LIBNET_ETH_H);
@@ -65,17 +58,30 @@ void packet_handler(u_char* user, const struct pcap_pkthtr* packet, const u_char
 
     if (!gateway_mac_src_set)
     {
-        memcpy(gateway_mac_src, eth_h->shost, 6);
+        memcpy(gateway_mac_src, eth_h->ether_shost, 6);
         gateway_mac_src_set = 1;
     }    
 
+    // Log("%d", tcp_h->th_flags);
+    Log("ACK: %u", tcp_h->th_ack);
+
     if (tcp_h->th_flags == (TH_ACK | TH_RST))
     {
-        fprintf(stdout, "%s:%u closed", libnet_addr2name4(ip->ip_src.s_addr, LIBNET_DONT_RESOLVE), ntohs(tcp->th_sport));
+        fprintf(stdout, "%s:%u closed", libnet_addr2name4(ip_h->ip_src.s_addr, LIBNET_DONT_RESOLVE), ntohs(tcp_h->th_sport));
     }
     else if (tcp_h->th_flags == (TH_ACK | TH_SYN))
     {
-        fprintf(stdout, "%s:%u opened", libnet_addr2name4(ip->ip_src.s_addr, LIBNET_DONT_RESOLVE), ntohs(tcp->th_sport));
+        fprintf(stdout, "%s:%u opened", libnet_addr2name4(ip_h->ip_src.s_addr, LIBNET_DONT_RESOLVE), ntohs(tcp_h->th_sport));
     }
 }
+
+void start_pcap()
+{
+    Log("Pcap is OK");
+    for (;;)
+    {
+        pcap_dispatch(handler, -1, packet_handler, NULL);
+    } 
+}
+
 

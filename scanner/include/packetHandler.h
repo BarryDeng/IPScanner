@@ -3,7 +3,7 @@
 
 #include "commons.h"
 
-void init_pcap_ctx(char*);
+void init_pcap_ctx(const char*);
 void start_pcap();
 
 #endif

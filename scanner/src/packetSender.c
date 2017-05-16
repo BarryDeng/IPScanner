@@ -5,6 +5,7 @@ extern const char* nic_device;
 extern uint32_t ip_pool_start;
 extern uint32_t ip_pool_end;
 extern uint32_t ip_pool_num;
+extern int pcap_inited;
 
 static int ctx_inj;
 static libnet_t* netctx = NULL;
@@ -68,19 +69,21 @@ void init_ip_pool(const char* addr)
     if ((pos = strchr(addr, '/')))
     {
         /*Has a mask. */ 
-        uint32_t mask = 1 << atoi(pos + 1);
+        uint32_t mask = 1 << (32 - atoi(pos + 1));
         mask -= 1;
 
         strncpy(ip_addr, addr, pos - addr);
+        ip_addr[pos - addr] = '\0';
         if ((ip_addr_int = libnet_name2addr4(netctx, ip_addr, LIBNET_DONT_RESOLVE)) == (uint32_t)-1)
         {
             fprintf(stderr, "Invalid addr %s: %s\n", ip_addr, libnet_geterror(netctx));
             exit(1);        
         }
 
-        ip_pool_start = ~mask & ntohl(ip_addr_int); 
-        ip_pool_end = mask | ntohl(ip_addr_int);
+        ip_pool_start = (~mask & ntohl(ip_addr_int)) + 1; 
+        ip_pool_end = (mask | ntohl(ip_addr_int)) - 1;
         ip_pool_num = mask - 1;
+        Log("Start: %s End: %s", libnet_addr2name4(htonl(ip_pool_start), LIBNET_DONT_RESOLVE), libnet_addr2name4(htonl(ip_pool_end), LIBNET_DONT_RESOLVE));
 
     }
     else
@@ -106,9 +109,8 @@ uint32_t get_ip(uint32_t index)
 
 void sendSYN(uint32_t dst, uint16_t dp)
 {
-    Log("Wait 3 seconds...");
-    sleep(3);
-    Log("Seed SYN to %s:%u", libnet_addr2name4(dst, LIBNET_DONT_RESOLVE), dp);
+    while (!pcap_inited);
+    // Log("Seed SYN to %s:%u", libnet_addr2name4(dst, LIBNET_DONT_RESOLVE), dp);
     uint32_t src = ip_src;
     uint16_t sp = libnet_get_prand(LIBNET_PRu16);
 

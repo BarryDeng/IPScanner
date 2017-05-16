@@ -13,6 +13,12 @@ PROG=ipscan
 
 all: $(PROG)
 
+test: $(PROG) 
+	sudo ./$(PROG) -i lo -p 22 -s SYN 192.168.155.128
+
+debug: $(PROG)
+	sudo gdb $(PROG)
+
 #当$(objects)列表里所有文件都生成后，便可调用这里的 $(CC) $^ -o $@ 命令生成最终目标all了
 #把all定义成第1个规则，使得可以把make all命令简写成make
 $(PROG): $(objects)
@@ -21,7 +27,7 @@ $(PROG): $(objects)
 #这段是make的模式规则，指示如何由.c文件生成.o，即对每个.c文件，调用gcc -c XX.c -o XX.o命令生成对应的.o文件。
 #如果不写这段也可以，因为make的隐含规则可以起到同样的效果
 %.o: %.c
-	$(CC) -I$(INCLUDE_DIR) -c $< -o $(addprefix $(OBJ_DIR),$@)
+	$(CC) -I$(INCLUDE_DIR) -g -c $< -o $(addprefix $(OBJ_DIR),$@)
 
 include $(dependence) #注意该句要放在终极目标all的规则之后，否则.d文件里的规则会被误当作终极规则了
 %.d: %.c
@@ -29,7 +35,6 @@ include $(dependence) #注意该句要放在终极目标all的规则之后，否
 	$(CC) -MM -I$(INCLUDE_DIR) $(CPPFLAGS) $< > $@.$$$$; \
 	sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' < $@.$$$$ > $@; \
 	
-
 .PHONY: clean clean-d#之所以把clean定义成伪目标，是因为这个目标并不对应实际的文件
 clean:
 	rm -f $(PROG) $(addprefix $(OBJ_DIR),$(objects)) $(dependence)

@@ -1,11 +1,23 @@
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <stdlib.h>
-#include <string.h>
+#include "commons.h"
 #include "debug.h"
 #include "connect.h"
 #include "packetSender.h"
 
+char* hostlookup(struct in_addr in)
+{
+    static char blah[1024];
+    struct hostent *he;
+    he = gethostbyaddr((char *)&in, sizeof(struct in_addr), AF_INET);
+    if (!he)
+    {
+        strcpy(blah, inet_ntoa(in));
+    }
+    else
+    {
+        strcpy(blah, he->h_name);
+    }
+    return blah;
+}
 
 void connectScan(uint32_t addr, int* port, int portnum)
 {
@@ -20,15 +32,14 @@ void connectScan(uint32_t addr, int* port, int portnum)
     for (int i = 0; i < portnum; ++i)
     {
         sockaddr.sin_port = htons(port[i]);
-        // Log("%d", ntohl(sockaddr.sin_port));
+        // Log("%d", ntohs(sockaddr.sin_port));
         if ((fd = connect_once(AF_INET, SOCK_STREAM, 0, (struct sockaddr *)&sockaddr, sizeof(sockaddr))) < 0)
         {
             // Log("%u:%d Failed", addr, port[i]);
         }
         else
         {   
-            inet_ntop(AF_INET, (void *)&addr, ip_addr, INET_ADDRSTRLEN);
-            Log("%s:%u OK", ip_addr, port[i]);
+            printf("%s:%u opened\n", hostlookup(sockaddr.sin_addr), port[i]);
         }
     }
 

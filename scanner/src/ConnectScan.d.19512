@@ -1,0 +1,3 @@
+ConnectScan.o: scanner/src/ConnectScan.c scanner/include/commons.h \
+ scanner/include/debug.h scanner/include/connect.h \
+ scanner/include/commons.h scanner/include/packetSender.h

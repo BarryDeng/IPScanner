@@ -9,6 +9,8 @@
 #include <libnet.h>
 #include <time.h>
 #include <pcap.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 #include <pthread.h>
 

@@ -1,0 +1,2 @@
+packetSender.o: scanner/src/packetSender.c scanner/include/commons.h \
+ scanner/include/debug.h

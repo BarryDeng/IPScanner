@@ -1,0 +1,2 @@
+connectBuilder.o: scanner/src/connectBuilder.c scanner/include/connect.h \
+ scanner/include/commons.h

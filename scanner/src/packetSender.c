@@ -109,7 +109,6 @@ uint32_t get_ip(uint32_t index)
 
 void sendSYN(uint32_t dst, uint16_t dp)
 {
-    while (!pcap_inited);
     // Log("Seed SYN to %s:%u", libnet_addr2name4(dst, LIBNET_DONT_RESOLVE), dp);
     uint32_t src = ip_src;
     uint16_t sp = libnet_get_prand(LIBNET_PRu16);

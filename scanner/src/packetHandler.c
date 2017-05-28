@@ -26,7 +26,7 @@ void init_pcap_ctx(const char * interface)
         exit(1);
     }
 
-    if (pcap_setnonblock(handler, 1, errbuf) == -1)
+    if (pcap_setnonblock(handler, 0, errbuf) == -1)
     {
         fprintf(stderr, "Network interface set non-blocking failed: %s\n", errbuf);
         exit(1);
@@ -77,18 +77,16 @@ void packet_handler(unsigned char* user, const struct pcap_pkthdr* packet, const
     }
     else if (tcp_h->th_flags == (TH_ACK | TH_SYN))
     {
-        fprintf(stdout, "%s:%u opened\n", libnet_addr2name4(ip_h->ip_src.s_addr, LIBNET_DONT_RESOLVE), ntohs(tcp_h->th_sport));
+        fprintf(stdout, "%s:%u opened\n", libnet_addr2name4(ip_h->ip_src.s_addr, LIBNET_RESOLVE), ntohs(tcp_h->th_sport));
     }
 }
 
-void start_pcap()
+void start_pcap(int num)
 {
     Log("Pcap is OK");
     pcap_inited = 1;
-    for (;;)
-    {
-        pcap_dispatch(handler, -1, packet_handler, NULL);
-    } 
+    Log("Capture num: %d", num);
+    pcap_dispatch(handler, num, packet_handler, NULL);
 }
 
 

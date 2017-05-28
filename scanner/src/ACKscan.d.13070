@@ -1,0 +1,2 @@
+ACKscan.o: scanner/src/ACKscan.c scanner/include/commons.h \
+ scanner/include/debug.h

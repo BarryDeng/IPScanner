@@ -4,8 +4,8 @@
 #include "packetSender.h"
 #include "packetHandler.h"
 
-#define MAX_PORT_NUM 20
-int ALL_PORTS[65536];
+#define MAX_PORT_NUM 65536
+int ports[MAX_PORT_NUM];
 
 const char* nic_device = NULL;
 const int interval_time = 0;
@@ -23,34 +23,30 @@ const int SCAN_LEN = sizeof(scanType) / sizeof(scanType[0]);
 
 void initScanner()
 {
-    for (int i = 1; i <= 65535; ++i)
-    {
-        ALL_PORTS[i - 1] = i;
-    }
 }
 
 
 void (*scanDispatcher(char* type)) (uint32_t, int*, int)
 {
-	int i = 0;
-	for (; i < SCAN_LEN; ++i)
-	{
-		if (!strcmp(type, scanType[i]))
-		{
-			return scanFunc[i];
-		}	
-	} 	
-	return NULL;
+    int i = 0;
+    for (; i < SCAN_LEN; ++i)
+    {
+        if (!strcmp(type, scanType[i]))
+        {
+            return scanFunc[i];
+        }	
+    } 	
+    return NULL;
 }
 
 void* start_pcap_helper(void* arg)
 {
-    start_pcap();
+    start_pcap(*(int *)arg);
 }
 
 void doScan(char* addr, char *port, char* type)
 {
-	void (*fun)(uint32_t, int*, int);
+    void (*fun)(uint32_t, int*, int);
     if (!type)
     {
         fprintf(stderr, "You must choose a scan type! e.g. Connect, SYN, ACK, UDP.\n");
@@ -58,50 +54,79 @@ void doScan(char* addr, char *port, char* type)
     }
 
 
-    int* ports, portnum;
+    int portnum = 0;
     if (!port)
     {
-        ports = ALL_PORTS;    
-        portnum = 65535;
+        for (int i = 1; i <= 65535; ++i)
+        {
+            ports[portnum++] = i;
+        }    
     }
     else
     {
         // DONE: add more ports support. 
-        ports = (int*)malloc(MAX_PORT_NUM * sizeof(int));
-        portnum = 0;
-        int first_port = atoi(port);
-        if (!first_port) 
+        int last_port = 0, now_port = 0;
+        char * p = port;
+        for (; *p != '\0'; ++p)
         {
-            fprintf(stderr, "Port invalid!\n");
-            exit(1);
+            if (isdigit(*p))
+            {
+                now_port = 10 * now_port + *p - '0';
+            }
+            else if (*p == ',')
+            {
+                if (!last_port) last_port = now_port;
+                for (int i = last_port; i <= now_port; ++i)
+                {
+                    ports[portnum++] = i;
+                }
+                last_port = 0;
+                now_port = 0;
+            }
+            else if (*p == '-')
+            {
+                if (last_port)
+                {
+                    fprintf(stderr, "Port invalid");
+                    exit(1);
+                }
+                last_port = now_port;
+                now_port = 0;
+            }
         }
-        ports[portnum++] = first_port;
-        char* p = strtok(port, ",");
-        while (p)
+        if (now_port)
         {
-            int other_port = atoi(p);
-            ports[portnum++] = other_port;
-            p = strtok(NULL, ",");
+            if (!last_port) last_port = now_port;    
+            for (int i = last_port; i <= now_port; ++i)
+            {
+                ports[portnum++] = i;
+            }
         }
     }
 
     pthread_t tid;
-	if (!(fun = scanDispatcher(type)))
-	{
-		fprintf(stderr, "Wrong type!\n");	
+    if (!(fun = scanDispatcher(type)))
+    {
+        fprintf(stderr, "Wrong type!\n");	
         exit(1);
-	}
-	else
-	{
+    }
+    else
+    {
         init_ip_pool(addr);
         init_net_ctx(LIBNET_RAW4);
         init_pcap_ctx(nic_device);
-        pthread_create(&tid, NULL, start_pcap_helper, NULL);
+
+        int capnum = ip_pool_num * portnum;
+        pthread_create(&tid, NULL, start_pcap_helper, (void *)&capnum);
+
+        void* status;
+        while (!pcap_inited);
         for (uint32_t i = 0; i < ip_pool_num; ++i)
         {
             Log("NOW %s", libnet_addr2name4(htonl(ip_pool_start + i), LIBNET_DONT_RESOLVE));
-		    fun(get_ip(i), ports, portnum);	
+            fun(get_ip(i), ports, portnum);	
         }
-	}
-	
+        pthread_join(tid, status);
+    }
+
 }

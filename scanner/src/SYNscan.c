@@ -12,7 +12,6 @@ struct _addr {
 void sendHelper(void * args)
 {
     struct _addr addr = *(struct _addr *)args;
-    // Log("%d %d", *addr.port, addr.portn);
     sleep(BEGIN_SLEEP_TIME);
     for (int i = 0; i < addr.portn; ++i)
     {

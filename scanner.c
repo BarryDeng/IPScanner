@@ -66,11 +66,23 @@ void doScan(char* addr, char *port, char* type)
     }
     else
     {
-        // TODO: add more ports support. 
+        // DONE: add more ports support. 
         ports = (int*)malloc(MAX_PORT_NUM * sizeof(int));
-		int p = atoi(port);
-        *ports = p;
-        portnum = 1;
+        portnum = 0;
+        int first_port = atoi(port);
+        if (!first_port) 
+        {
+            fprintf(stderr, "Port invalid!\n");
+            exit(1);
+        }
+        ports[portnum++] = first_port;
+        char* p = strtok(port, ",");
+        while (p)
+        {
+            int other_port = atoi(p);
+            ports[portnum++] = other_port;
+            p = strtok(NULL, ",");
+        }
     }
 
     pthread_t tid;

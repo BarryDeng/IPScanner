@@ -1,3 +1,0 @@
-packetHandler.o: scanner/src/packetHandler.c \
- scanner/include/packetHandler.h scanner/include/commons.h \
- scanner/include/debug.h

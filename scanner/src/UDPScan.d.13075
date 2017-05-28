@@ -1,2 +1,0 @@
-UDPScan.o: scanner/src/UDPScan.c scanner/include/commons.h \
- scanner/include/debug.h

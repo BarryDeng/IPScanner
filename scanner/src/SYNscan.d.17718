@@ -1,3 +1,0 @@
-SYNscan.o: scanner/src/SYNscan.c scanner/include/commons.h \
- scanner/include/debug.h scanner/include/packetSender.h \
- scanner/include/packetHandler.h scanner/include/commons.h

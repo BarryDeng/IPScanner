@@ -109,7 +109,7 @@ uint32_t get_ip(uint32_t index)
 
 void sendSYN(uint32_t dst, uint16_t dp)
 {
-    // Log("Seed SYN to %s:%u", libnet_addr2name4(dst, LIBNET_DONT_RESOLVE), dp);
+    // Log("Send SYN to %s:%u", libnet_addr2name4(dst, LIBNET_DONT_RESOLVE), dp);
     uint32_t src = ip_src;
     uint16_t sp = libnet_get_prand(LIBNET_PRu16);
 
@@ -178,6 +178,81 @@ void sendSYN(uint32_t dst, uint16_t dp)
     {
         Log("Send packet Failed!");
     }
+
+}
+
+void sendFIN(uint32_t dst, uint16_t dp)
+{
+    // Log("Send FIN to %s:%u", libnet_addr2name4(dst, LIBNET_DONT_RESOLVE), dp);
+    uint32_t src = ip_src;
+    uint16_t sp = libnet_get_prand(LIBNET_PRu16);
+
+    tcp_tag = libnet_build_tcp(
+            sp, /* source port */
+            dp, /* dest port */
+            tcp_no, /* TCP seq num */
+            0, /* ACK */
+            TH_FIN, /* FLAGS */
+            1024, /* Window */
+            0, /* checksum */
+            0, /* URG */
+            LIBNET_TCP_H, /* Header length */
+            NULL, /* Payload */
+            0, /* Payload length*/                
+            netctx, /* Context */
+            tcp_tag /* Tag */
+            );
+    if (tcp_tag == -1)
+    {
+        fprintf(stderr, "Build TCP Header Error: %s\n", libnet_geterror(netctx));
+        exit(1);
+    }
+
+    ip_tag = libnet_build_ipv4(
+            LIBNET_TCP_H + LIBNET_IPV4_H, /* Header length */
+            0, /* TOS */
+            libnet_get_prand(LIBNET_PRu16), /* IP seq num */
+            0,    /* Frag offset */
+            127,    /* TTL */
+            IPPROTO_TCP,    /* Upper layer protocol */
+            0,    /* Checksum */
+            src,    /* Src IP */
+            dst,    /* Dst IP */
+            NULL,    /* Payload */
+            0,    /* Payload length */
+            netctx,    /* Context */
+            ip_tag /* IP tag */
+            ); 
+
+    if (ip_tag == -1)
+    {
+        fprintf(stderr, "Build IP Header Error: %s\n", libnet_geterror(netctx));
+        exit(1);
+    }
+
+    if (netctx == LIBNET_LINK)
+    {
+        mac_tag = libnet_build_ethernet(
+                    gateway_mac_src,
+                    mac_src,
+                    ETHERTYPE_IP,
+                    NULL,
+                    0,
+                    netctx,
+                    mac_tag
+                ); 
+        if (mac_tag == -1)
+        {
+            fprintf(stderr, "Build MAC Header Error: %s\n", libnet_geterror(netctx));
+            exit(1);
+        }
+    }
+
+    if (libnet_write(netctx) == -1)
+    {
+        Log("Send packet Failed!");
+    }
+
 
 }
 

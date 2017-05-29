@@ -12,5 +12,6 @@ uint32_t get_ip(uint32_t index);
 void sendSYN(uint32_t dst, uint16_t dp);
 void sendACK(uint32_t dst, uint16_t dp);
 void sendUDP(uint32_t dst, uint16_t dp);
+void sendFIN(uint32_t dst, uint16_t dp);
 
 #endif

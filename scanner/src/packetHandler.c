@@ -1,6 +1,7 @@
 #include "packetHandler.h"
 #include "debug.h"
 
+extern char* gScanType;
 extern uint32_t tcp_no;
 extern uint8_t gateway_mac_src[6];
 extern int gateway_mac_src_set;
@@ -69,13 +70,11 @@ void packet_handler(unsigned char* user, const struct pcap_pkthdr* packet, const
         gateway_mac_src_set = 1;
     }    
 
-    // Log("%d %d", tcp_h->th_flags, TH_ACK | TH_RST);
-
-    if (tcp_h->th_flags == (TH_ACK | TH_RST))
+    if (tcp_h->th_flags & TH_RST && !strcmp("FIN", gScanType))
     {
-    //    fprintf(stdout, "%s:%u closed\n", libnet_addr2name4(ip_h->ip_src.s_addr, LIBNET_DONT_RESOLVE), ntohs(tcp_h->th_sport));
+        fprintf(stdout, "%s:%u closed\n", libnet_addr2name4(ip_h->ip_src.s_addr, LIBNET_RESOLVE), ntohs(tcp_h->th_sport));
     }
-    else if (tcp_h->th_flags == (TH_ACK | TH_SYN))
+    else if (tcp_h->th_flags == (TH_ACK | TH_SYN) && !strcmp("SYN", gScanType))
     {
         fprintf(stdout, "%s:%u opened\n", libnet_addr2name4(ip_h->ip_src.s_addr, LIBNET_RESOLVE), ntohs(tcp_h->th_sport));
     }

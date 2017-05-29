@@ -17,8 +17,9 @@ uint32_t ip_pool_start;
 uint32_t ip_pool_end;
 uint32_t ip_pool_num;
 
-char* scanType[] = {"SYN", "ACK", "Connect", "UDP"};
-void (*scanFunc[])(uint32_t, int*, int) = {synScan, ackScan, connectScan, udpScan};
+char* scanType[] = {"SYN", "ACK", "Connect", "UDP", "FIN"};
+void (*scanFunc[])(uint32_t, int*, int) = {synScan, ackScan, connectScan, udpScan, finScan};
+char* gScanType;
 const int SCAN_LEN = sizeof(scanType) / sizeof(scanType[0]);
 
 void initScanner()
@@ -33,6 +34,7 @@ void (*scanDispatcher(char* type)) (uint32_t, int*, int)
     {
         if (!strcmp(type, scanType[i]))
         {
+            gScanType = scanType[i];
             return scanFunc[i];
         }	
     } 	

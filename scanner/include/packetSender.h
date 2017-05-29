@@ -2,7 +2,7 @@
 #define __PACKET_SENDER_H__
 
 #define PORTS_PER_THREAD 70000
-#define BEGIN_SLEEP_TIME 3
+#define BEGIN_SLEEP_TIME 0
 #define PACKET_SLEEP_TIME 2000
 
 void init_net_ctx(int inj_type);

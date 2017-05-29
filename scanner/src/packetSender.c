@@ -6,6 +6,7 @@ extern uint32_t ip_pool_start;
 extern uint32_t ip_pool_end;
 extern uint32_t ip_pool_num;
 extern int pcap_inited;
+extern int host_mode;
 
 static int ctx_inj;
 static libnet_t* netctx = NULL;
@@ -61,6 +62,13 @@ void init_net_ctx(int inj_type)
 
 void init_ip_pool(const char* addr)
 {
+    if (host_mode)
+    {
+        struct hostent *host = gethostbyname(addr);
+        ip_pool_start = ip_pool_end = ntohl(((struct in_addr *)host->h_addr_list[0])->s_addr);
+        ip_pool_num = 1;
+        return;
+    }
     char* pos = 0;
 
     char ip_addr[16];

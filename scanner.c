@@ -8,8 +8,9 @@
 int ports[MAX_PORT_NUM];
 
 const char* nic_device = NULL;
-const int interval_time = 0;
-const int timeout_time = 5;
+int interval_time = 0;
+int timeout_time = 5;
+int host_mode = 0;
 
 int pcap_inited = 0;
 
@@ -129,9 +130,10 @@ void doScan(char* addr, char *port, char* type)
         }
         for (uint32_t i = 0; i < ip_pool_num; ++i)
         {
-            Log("NOW %s", libnet_addr2name4(htonl(ip_pool_start + i), LIBNET_DONT_RESOLVE));
+            // Log("NOW %s", libnet_addr2name4(htonl(ip_pool_start + i), LIBNET_DONT_RESOLVE));
             fun(get_ip(i), ports, portnum);	
         }
+        alarm(15);
         if (fun != connectScan) 
             pthread_join(tid, status);
     }

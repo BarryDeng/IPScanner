@@ -4,6 +4,7 @@
 extern const char* nic_device;
 extern int interval_time;
 extern int timeout_time;
+extern int host_mode;
 
 void initScanner();
 void init_ip_pool(const char* addr);
@@ -31,10 +32,13 @@ int main(int argc, char* argv[])
 
     initScanner();
 	// opterr = 0;
-	while ((ch = getopt(argc, argv, "i:s:p:ht:T:")) != -1)	
+	while ((ch = getopt(argc, argv, "Hi:s:p:ht:T:")) != -1)	
 	{
 		switch (ch)
 		{
+            case 'H':
+                host_mode = 1; 
+                break;
             // NIC: eth0, wlan0, ...
             case 'i':
                 Log("option i: %s\n", optarg);

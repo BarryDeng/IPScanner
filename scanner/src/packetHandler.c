@@ -16,7 +16,7 @@ static struct bpf_program bpf_p;
 
 void init_pcap_ctx(const char * interface)
 {
-    if (!(handler = pcap_open_live(interface, 1500, 0, 2000, errbuf)))
+    if (!(handler = pcap_open_live(interface, 1500, 0, 10000, errbuf)))
     {
         fprintf(stderr, "Network interface %s open failed: %s\n", interface, errbuf);
         exit(1);
@@ -58,6 +58,13 @@ void init_pcap_ctx(const char * interface)
 
 }
 
+void alarm_handler(int sig)
+{
+    Log("DDDDD");
+    pcap_breakloop(handler);
+    pcap_close(handler);
+}
+
 void packet_handler(unsigned char* user, const struct pcap_pkthdr* packet, const unsigned char* raw)
 {
     struct libnet_ethernet_hdr* eth_h = (struct libnet_ethernet_hdr*)raw;
@@ -84,8 +91,10 @@ void start_pcap(int num)
 {
     Log("Pcap is OK");
     pcap_inited = 1;
-    Log("Capture num: %d", num);
-    pcap_dispatch(handler, num, packet_handler, NULL);
+    Log("Capture num: %d", num); 
+    alarm(30);
+    signal(SIGALRM, alarm_handler);
+    pcap_loop(handler, num, packet_handler, NULL);
 }
 
 
